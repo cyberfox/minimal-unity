@@ -13,6 +13,7 @@ public class Cubist : MonoBehaviour
 {
     public Material DefaultMaterial;
     private float scalefactor = 10.0f;
+    public bool doubleSided = false;
 
     class MeshFace
     {
@@ -145,6 +146,7 @@ public class Cubist : MonoBehaviour
         simple_mesh.transform.rotation = object_rot;
         simple_mesh.AddComponent<MeshFilter>();
         simple_mesh.AddComponent<MeshRenderer>();
+        simple_mesh.GetComponent<MeshRenderer>().material = DefaultMaterial;
 
         int submesh = 0;
         foreach (Geometry g in dsf.geometry_library)
@@ -154,7 +156,9 @@ public class Cubist : MonoBehaviour
             Node n = dsf.node_library.First();
             Debug.Log(n.name);
             Vertices vertices = g.vertices;
-            Vector3[] vertex_data   =   new Vector3[vertices.count];
+            Vector3[] vertex_data;
+            vertex_data = new Vector3[vertices.count];
+
             for (int i = 0; i < vertices.count; i++)
             {
                 vertex_data[i] = new Vector3(vertices.values[i][0], vertices.values[i][1], vertices.values[i][2]);
@@ -175,12 +179,11 @@ public class Cubist : MonoBehaviour
                 mesh.SetIndices(indices, MeshTopology.Quads, submesh);
             }
             mesh.RecalculateNormals();
-            simple_mesh.GetComponent<MeshRenderer>().material = DefaultMaterial;
             submesh++;
         }
     }
 
-    private static int[] buildIndices(PolyList polys, out bool isTriangles)
+    private int[] buildIndices(PolyList polys, out bool isTriangles)
     {
         int quadCount = 0;
         int triCount = 0;
@@ -215,23 +218,43 @@ public class Cubist : MonoBehaviour
         }
         else
         {
-            indices = new int[quadCount * 6 + triCount * 3];
+            int baseCount = quadCount * 6 + triCount * 3;
             int currentIndex = 0;
+
+            if (doubleSided)
+            {
+                indices = new int[baseCount*2];
+            }
+            else
+            {
+                indices = new int[baseCount];
+            }
+
             for (int i = 0; i < polys.count; i++)
             {
                 if (polys.values[i].Count == 5)
                 {
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][3];
                     indices[currentIndex++] = polys.values[i][2];
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][2];
                     indices[currentIndex++] = polys.values[i][3];
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][4];
                     indices[currentIndex++] = polys.values[i][4];
                 }
                 else
                 {
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][3];
                     indices[currentIndex++] = polys.values[i][2];
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][2];
                     indices[currentIndex++] = polys.values[i][3];
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][5];
                     indices[currentIndex++] = polys.values[i][5];
+
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][3];
                     indices[currentIndex++] = polys.values[i][5];
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][5];
                     indices[currentIndex++] = polys.values[i][3];
+                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][4];
                     indices[currentIndex++] = polys.values[i][4];
                 }
             }
