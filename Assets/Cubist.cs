@@ -20,19 +20,47 @@ public class Cubist : MonoBehaviour
         Debug.Log(dsf.file_version);
 
         GameObject simple_mesh = new GameObject("DSF_Object");
+        generateMesh(simple_mesh, dsf, out Vector3[] vertexData, out int[] indices);
+        if (doubleSided)
+        {
+            GameObject second_mesh = new GameObject("DSF_Object_inverse");
+            Vector3 object_pos = new Vector3(0, 0.5f, 0);
+            Quaternion object_rot = new Quaternion(0, 0, 0, 0);
+            second_mesh.transform.position = object_pos;
+            second_mesh.transform.rotation = object_rot;
+            second_mesh.AddComponent<MeshFilter>();
+            second_mesh.AddComponent<MeshRenderer>();
+            second_mesh.GetComponent<MeshRenderer>().material = DefaultMaterial;
+            Mesh mesh = second_mesh.GetComponent<MeshFilter>().mesh;
+            mesh.name = "inverted";
+            mesh.vertices = vertexData;
+            for (int i = 0; i < indices.Length; i+=3)
+            {
+                int temp = indices[i];
+                indices[i] = indices[i+1];
+                indices[i+1] = temp;
+            }
+            mesh.SetIndices(indices, MeshTopology.Triangles, 0);
+            mesh.RecalculateNormals();
+        }
+    }
+
+    private void generateMesh(GameObject simple_mesh, DSF dsf, out Vector3[] vertex_data, out int[] indices)
+    {
         Vector3 object_pos = new Vector3(0, 0.5f, 0);
-        Quaternion object_rot = new Quaternion(0,0,0,0);
+        Quaternion object_rot = new Quaternion(0, 0, 0, 0);
         simple_mesh.transform.position = object_pos;
         simple_mesh.transform.rotation = object_rot;
         simple_mesh.AddComponent<MeshFilter>();
         simple_mesh.AddComponent<MeshRenderer>();
         simple_mesh.GetComponent<MeshRenderer>().material = DefaultMaterial;
+        vertex_data = null;
+        indices = null;
 
         int submesh = 0;
         foreach (Geometry g in dsf.geometry_library)
         {
             Vertices vertices = g.vertices;
-            Vector3[] vertex_data;
             vertex_data = new Vector3[vertices.count];
 
             for (int i = 0; i < vertices.count; i++)
@@ -53,6 +81,7 @@ public class Cubist : MonoBehaviour
             {
                 mesh.SetIndices(indices, MeshTopology.Quads, submesh);
             }
+
             mesh.RecalculateNormals();
             submesh++;
         }
@@ -96,40 +125,24 @@ public class Cubist : MonoBehaviour
             int baseCount = quadCount * 6 + triCount * 3;
             int currentIndex = 0;
 
-            if (doubleSided)
-            {
-                indices = new int[baseCount*2];
-            }
-            else
-            {
-                indices = new int[baseCount];
-            }
+            indices = new int[baseCount];
 
             for (int i = 0; i < polys.count; i++)
             {
                 if (polys.values[i].Count == 5)
                 {
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][3];
                     indices[currentIndex++] = polys.values[i][2];
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][2];
                     indices[currentIndex++] = polys.values[i][3];
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][4];
                     indices[currentIndex++] = polys.values[i][4];
                 }
                 else
                 {
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][3];
                     indices[currentIndex++] = polys.values[i][2];
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][2];
                     indices[currentIndex++] = polys.values[i][3];
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][5];
                     indices[currentIndex++] = polys.values[i][5];
 
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][3];
                     indices[currentIndex++] = polys.values[i][5];
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][5];
                     indices[currentIndex++] = polys.values[i][3];
-                    if (doubleSided) indices[baseCount+currentIndex] = polys.values[i][4];
                     indices[currentIndex++] = polys.values[i][4];
                 }
             }
