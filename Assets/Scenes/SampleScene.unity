@@ -151,6 +151,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DefaultMaterial: {fileID: 2100000, guid: 36ed260b70ae64c68b43b864ee44e392, type: 2}
+  doubleSided: 1
   Filepath: /Users/mrs/Runtimes/Renderosity/data/Mytilus/Denim Attraction/DA Shorts/dnm_shorts_22131.dsf
 --- !u!4 &650728164
 Transform:
@@ -371,6 +372,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   DefaultMaterial: {fileID: 2100000, guid: 36ed260b70ae64c68b43b864ee44e392, type: 2}
+  doubleSided: 0
   Filepath: /Users/mrs/Documents/DAZ 3D/Studio/My Daz Connect Library/data/cloud/1_52197/data/daz
     3d/chic fashion gothic outfit/collar/go_collar_19856.dsf
 --- !u!4 &965712150
